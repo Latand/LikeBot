@@ -16,10 +16,10 @@ async def new_post(m: Message):
         **{str(m.message_id): {"pos": 0, "neg": 0}})
 
 
-@dp.callback_query_handler()
-async def call(c: CallbackQuery, state: FSMContext):
+@dp.callback_query_handler(like.filter())
+async def call(c: CallbackQuery, state: FSMContext, callback_data: dict):
     message_id = str(c.message.message_id)
-    liked = int(c.data)
+    liked = callback_data.get("action")
     await c.answer(f"Вам {'Понравилось' if liked else 'Не понравилось'}")
 
     ratings = (await dp.current_state(chat=c.message.chat.id,
