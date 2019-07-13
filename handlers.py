@@ -31,10 +31,12 @@ async def call(c: CallbackQuery, state: FSMContext, callback_data: dict):
             if liked and prev_like:
                 pos -= 1
                 await c.answer(f"Вы убрали реакцию")
+                data[message_id] = None
 
             elif not liked and not prev_like:
                 neg -= 1
                 await c.answer(f"Вы убрали реакцию")
+                data[message_id] = None
 
             elif liked:
                 pos += 1
