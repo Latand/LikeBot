@@ -2,7 +2,7 @@ from app import dp
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery, ContentTypes
 from aiogram.utils.callback_data import CallbackData
-
+import re
 like = CallbackData("like", "action")
 
 
@@ -12,8 +12,6 @@ async def new_post(m: Message):
     keyb.insert(InlineKeyboardButton(text="👍 0", callback_data=like.new(action=1)))
     keyb.insert(InlineKeyboardButton(text="👎 0", callback_data=like.new(action=0)))
     await m.edit_reply_markup(keyb)
-    await dp.current_state(chat=m.chat.id, user=m.chat.id).update_data(
-        **{str(m.message_id): {"pos": 0, "neg": 0}})
 
 
 @dp.callback_query_handler(like.filter())
@@ -22,11 +20,9 @@ async def call(c: CallbackQuery, state: FSMContext, callback_data: dict):
     liked = int(callback_data.get("action"))
     await c.answer(f"Вам {'Понравилось' if liked else 'Не понравилось'}")
 
-    ratings = (await dp.current_state(chat=c.message.chat.id,
-                                      user=c.message.chat.id).get_data())
-    ratings = ratings.get(message_id)
-    pos = int(ratings.get("pos"))
-    neg = int(ratings.get("neg"))
+    markup = c.message.reply_markup.inline_keyboard[0]
+    pos = int(re.findall(r".+(\d+)", markup[0]["text"])[0])
+    neg = int(re.findall(r".+(\d+)", markup[1]["text"])[0])
 
     async with state.proxy() as data:
         prev_like = data.get(message_id, None)
@@ -51,7 +47,4 @@ async def call(c: CallbackQuery, state: FSMContext, callback_data: dict):
     keyb = InlineKeyboardMarkup(row_width=2)
     keyb.insert(InlineKeyboardButton(text=f"👍 {pos}", callback_data=like.new(action=1)))
     keyb.insert(InlineKeyboardButton(text=f"👎 {neg}", callback_data=like.new(action=0)))
-
     await c.message.edit_reply_markup(keyb)
-    await dp.current_state(chat=c.message.chat.id,
-                           user=c.message.chat.id).update_data(**{str(message_id): {"pos": pos, "neg": neg}})
