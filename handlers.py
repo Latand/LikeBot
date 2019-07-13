@@ -9,8 +9,8 @@ like = CallbackData("like", "action")
 @dp.channel_post_handler(content_types=ContentTypes.ANY)
 async def new_post(m: Message):
     keyb = InlineKeyboardMarkup(row_width=2)
-    keyb.add(InlineKeyboardButton(text="👍 0", callback_data=like.new(action=1)))
-    keyb.add(InlineKeyboardButton(text="👎 0", callback_data=like.new(action=0)))
+    keyb.insert(InlineKeyboardButton(text="👍 0", callback_data=like.new(action=1)))
+    keyb.insert(InlineKeyboardButton(text="👎 0", callback_data=like.new(action=0)))
     await m.edit_reply_markup(keyb)
     await dp.current_state(chat=m.chat.id, user=m.chat.id).update_data(
         **{str(m.message_id): {"pos": 0, "neg": 0}})
@@ -19,7 +19,7 @@ async def new_post(m: Message):
 @dp.callback_query_handler(like.filter())
 async def call(c: CallbackQuery, state: FSMContext, callback_data: dict):
     message_id = str(c.message.message_id)
-    liked = callback_data.get("action")
+    liked = int(callback_data.get("action"))
     await c.answer(f"Вам {'Понравилось' if liked else 'Не понравилось'}")
 
     ratings = (await dp.current_state(chat=c.message.chat.id,
@@ -49,8 +49,8 @@ async def call(c: CallbackQuery, state: FSMContext, callback_data: dict):
                 neg += 1
 
     keyb = InlineKeyboardMarkup(row_width=2)
-    keyb.add(InlineKeyboardButton(text=f"👍 {pos}", callback_data=like.new(action=1)))
-    keyb.add(InlineKeyboardButton(text=f"👎 {neg}", callback_data=like.new(action=0)))
+    keyb.insert(InlineKeyboardButton(text=f"👍 {pos}", callback_data=like.new(action=1)))
+    keyb.insert(InlineKeyboardButton(text=f"👎 {neg}", callback_data=like.new(action=0)))
 
     await c.message.edit_reply_markup(keyb)
     await dp.current_state(chat=c.message.chat.id,

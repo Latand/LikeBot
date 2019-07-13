@@ -4,7 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
-BOT_TOKEN = ""  # Insert token
+BOT_TOKEN = "368667419:AAEFZdCFtjdPSYwVSURZVzso8tGgAcziggA"  # Insert token
 
 logging.basicConfig(format=u'%(filename)s [LINE:%(lineno)d] #%(levelname)-8s [%(asctime)s]  %(message)s',
                     level=logging.DEBUG)
