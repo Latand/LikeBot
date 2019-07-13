@@ -3,6 +3,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message, CallbackQuery, ContentTypes
 from aiogram.utils.callback_data import CallbackData
 import re
+
 like = CallbackData("like", "action")
 
 
@@ -18,7 +19,6 @@ async def new_post(m: Message):
 async def call(c: CallbackQuery, state: FSMContext, callback_data: dict):
     message_id = str(c.message.message_id)
     liked = int(callback_data.get("action"))
-    await c.answer(f"Вам {'Понравилось' if liked else 'Не понравилось'}")
 
     markup = c.message.reply_markup.inline_keyboard[0]
     pos = int(re.findall(r".+(\d+)", markup[0]["text"])[0])
@@ -29,20 +29,30 @@ async def call(c: CallbackQuery, state: FSMContext, callback_data: dict):
         data[message_id] = liked
         if prev_like is not None:
             if liked and prev_like:
-                return
+                pos -= 1
+                await c.answer(f"Вы убрали реакцию")
+
             elif not liked and not prev_like:
-                return
+                neg -= 1
+                await c.answer(f"Вы убрали реакцию")
+
             elif liked:
                 pos += 1
                 neg -= 1
+                await c.answer(f"Вам Понравилось")
             else:
                 pos -= 1
                 neg += 1
+                await c.answer(f"Вам Не Понравилось")
+
         else:
             if liked:
                 pos += 1
+                await c.answer(f"Вам Понравилось")
+
             else:
                 neg += 1
+                await c.answer(f"Вам Не Понравилось")
 
     keyb = InlineKeyboardMarkup(row_width=2)
     keyb.insert(InlineKeyboardButton(text=f"👍 {pos}", callback_data=like.new(action=1)))
